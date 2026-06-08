@@ -369,9 +369,12 @@ var USER_DATA = {
   _showResults: false
 };
 
-// Questions available to this user = their own banks
+// Questions available to this user = built-in bank + their own uploaded banks
 function userActiveQuestions() {
   var qs = [];
+  if (typeof BUILTIN_BANK !== 'undefined' && BUILTIN_BANK.questions && BUILTIN_BANK.questions.length) {
+    qs = qs.concat(BUILTIN_BANK.questions);
+  }
   (USER_DATA.banks || []).forEach(function(b) { if (b.active) qs = qs.concat(b.questions); });
   return qs;
 }
@@ -3183,37 +3186,38 @@ function renderUserResults() {
 function renderUserQuestionBank() {
   var banks = USER_DATA.banks || [];
   var qs = userActiveQuestions();
+  var builtinCount = (typeof BUILTIN_BANK !== 'undefined' && BUILTIN_BANK.questions) ? BUILTIN_BANK.questions.length : 0;
+  var totalBanks = banks.length + (builtinCount > 0 ? 1 : 0);
 
   return '<div class="space-y-5">' +
 
     '<div class="flex items-center justify-between flex-wrap gap-3">' +
       '<div><div class="text-xl font-bold">My Question Bank</div>' +
-      '<div class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">' + qs.length + ' questions in ' + banks.length + ' bank(s)</div></div>' +
+      '<div class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">' + qs.length + ' questions in ' + totalBanks + ' bank(s)</div></div>' +
       '<button class="btn btn-primary" onclick="openUserUploadModal()">⊕ Upload Bank</button>' +
     '</div>' +
 
-    (banks.length
-      ? '<div class="card overflow-hidden">' +
-          '<div class="p-4 border-b border-gray-100 dark:border-gray-700 font-semibold text-sm">My Banks</div>' +
-          '<div class="overflow-x-auto"><table class="tbl"><thead><tr><th>Name</th><th>Questions</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
-          banks.map(function(b) {
-            return '<tr>' +
-              '<td class="font-medium">' + esc(b.name) + '</td>' +
-              '<td>' + b.questions.length + '</td>' +
-              '<td><span class="badge ' + (b.active?'badge-green':'badge-red') + '">' + (b.active?'Active':'Inactive') + '</span></td>' +
-              '<td style="display:flex;gap:.5rem;flex-wrap:wrap">' +
-                '<button class="btn btn-ghost text-xs py-1 px-2" onclick="toggleUserBank(\'' + b.id + '\')">' + (b.active?'Deactivate':'Activate') + '</button>' +
-                '<button class="btn btn-danger text-xs py-1 px-2" onclick="deleteUserBank(\'' + b.id + '\')">Delete</button>' +
-              '</td>' +
-            '</tr>';
-          }).join('') +
-          '</tbody></table></div></div>'
-      : '<div class="card p-8 text-center"><div class="drop-zone" onclick="openUserUploadModal()">' +
-          '<div style="font-size:3rem;margin-bottom:.75rem">📂</div>' +
-          '<div class="font-semibold">No Question Banks Yet</div>' +
-          '<div class="text-sm text-gray-500 mt-1">Click here to upload Excel, CSV, JSON or Word (.docx)</div>' +
-        '</div></div>'
-    ) +
+    '<div class="card overflow-hidden">' +
+      '<div class="p-4 border-b border-gray-100 dark:border-gray-700 font-semibold text-sm">Available Banks</div>' +
+      '<div class="overflow-x-auto"><table class="tbl"><thead><tr><th>Name</th><th>Questions</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+      (builtinCount > 0 ? '<tr>' +
+        '<td class="font-medium">📚 ' + esc(BUILTIN_BANK.name || 'Built-in PMP Bank') + '</td>' +
+        '<td>' + builtinCount + '</td>' +
+        '<td><span class="badge badge-green">Built-in</span></td>' +
+        '<td><span class="text-xs text-gray-400">Always active</span></td>' +
+      '</tr>' : '') +
+      banks.map(function(b) {
+        return '<tr>' +
+          '<td class="font-medium">' + esc(b.name) + '</td>' +
+          '<td>' + b.questions.length + '</td>' +
+          '<td><span class="badge ' + (b.active?'badge-green':'badge-red') + '">' + (b.active?'Active':'Inactive') + '</span></td>' +
+          '<td style="display:flex;gap:.5rem;flex-wrap:wrap">' +
+            '<button class="btn btn-ghost text-xs py-1 px-2" onclick="toggleUserBank(\'' + b.id + '\')">' + (b.active?'Deactivate':'Activate') + '</button>' +
+            '<button class="btn btn-danger text-xs py-1 px-2" onclick="deleteUserBank(\'' + b.id + '\')">Delete</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('') +
+      '</tbody></table></div></div>' +
 
     (qs.length
       ? '<div class="card p-5">' +
