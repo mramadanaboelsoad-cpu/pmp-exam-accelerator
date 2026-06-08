@@ -2989,13 +2989,12 @@ function renderUserExamSetup() {
 }
 
 var _uMode = 'uC';
-function selectMode(m) {  // override to also handle uA/uB/uC
+function selectMode(m) {  // handles both trainer (A/B/C) and user (uA/uB/uC) modes
   _selectedMode = m;
   _uMode = m;
   ['A','B','C','uA','uB','uC'].forEach(function(x) {
     var card  = document.getElementById('mode-' + x);
     var check = document.getElementById('mode-check-' + x);
-    var opts  = document.getElementById('mode-' + x + '-opts') || document.getElementById('mode-B-opts');
     if (card)  card.classList.toggle('active', x === m);
     if (check) check.style.display = x === m ? 'block' : 'none';
   });
@@ -3003,6 +3002,13 @@ function selectMode(m) {  // override to also handle uA/uB/uC
   if (bOpts) bOpts.style.display = m === 'B' ? 'grid' : 'none';
   var ubOpts = document.getElementById('mode-uB-opts');
   if (ubOpts) ubOpts.style.display = m === 'uB' ? 'block' : 'none';
+  // Update trainer hint text
+  var hint = document.getElementById('mode-hint');
+  if (hint) {
+    var labels = { A: 'Full PMP Exam selected', B: 'Custom Exam selected — set options above', C: 'Practice Mode selected',
+                   uA: 'Full PMP Exam selected', uB: 'Custom Exam selected', uC: 'Practice Mode selected' };
+    hint.textContent = '✓ ' + (labels[m] || m);
+  }
 }
 
 function startUserExam() {
@@ -3567,28 +3573,28 @@ function resetFull() {
 // ─────────────────────────────────────────────
 loadApp();   // always load trainer data (for question banks + theme)
 
-// Auto-load built-in banks on first launch
-(function() {
-  if (!APP.banks) APP.banks = [];
-  var ids = APP.banks.map(function(b){ return b.id; });
-  var added = false;
-  if (typeof BUILTIN_BANK !== 'undefined' && BUILTIN_BANK.questions && BUILTIN_BANK.questions.length && ids.indexOf(BUILTIN_BANK.id) === -1) {
-    APP.banks.push(Object.assign({}, BUILTIN_BANK));
-    added = true;
-  }
-  if (typeof BUILTIN_BANK_2 !== 'undefined' && BUILTIN_BANK_2.questions && BUILTIN_BANK_2.questions.length && ids.indexOf(BUILTIN_BANK_2.id) === -1) {
-    APP.banks.push(Object.assign({}, BUILTIN_BANK_2));
-    added = true;
-  }
-  if (added) saveApp();
-})();
-
 if (_activeUserId) {
-  // ── USER MODE ──
+  // ── USER MODE ── (student link)
+  // Do NOT modify or save trainer's APP data in user mode
   loadUserData();
   initUserMode();
 } else {
   // ── TRAINER MODE ──
+  // Auto-load built-in banks on first launch (trainer only)
+  (function() {
+    if (!APP.banks) APP.banks = [];
+    var ids = APP.banks.map(function(b){ return b.id; });
+    var added = false;
+    if (typeof BUILTIN_BANK !== 'undefined' && BUILTIN_BANK.questions && BUILTIN_BANK.questions.length && ids.indexOf(BUILTIN_BANK.id) === -1) {
+      APP.banks.push(Object.assign({}, BUILTIN_BANK));
+      added = true;
+    }
+    if (typeof BUILTIN_BANK_2 !== 'undefined' && BUILTIN_BANK_2.questions && BUILTIN_BANK_2.questions.length && ids.indexOf(BUILTIN_BANK_2.id) === -1) {
+      APP.banks.push(Object.assign({}, BUILTIN_BANK_2));
+      added = true;
+    }
+    if (added) saveApp();
+  })();
   applyTheme();
   updateSidebar();
   goPage(APP.page || 'dashboard');
