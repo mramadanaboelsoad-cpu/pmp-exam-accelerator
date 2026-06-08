@@ -1,0 +1,14 @@
+{
+  "name": "PMP Exam Accelerator",
+  "short_name": "PMP Accel",
+  "description": "PMP Exam Simulator & Training Platform powered by PMI Mindset Learning System",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0A2342",
+  "theme_color": "#0A2342",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
